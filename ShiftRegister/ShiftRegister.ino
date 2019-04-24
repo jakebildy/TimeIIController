@@ -68,3 +68,15 @@ void updateValves() {
 void thermoRegulation() {
   return;
 }
+
+
+//helper function  to convert naming convention to value in array
+
+// EXAMPLE: 412 corresponds to plate four, valve 12. Its array index would be (4-1)*16 + 12 = 60
+int nameToValue(int nameInt) {
+
+  int plate = nameInt / 100;
+  int spot = nameInt - plate;
+  
+  return (plate - 1) * 16 + spot;
+}
