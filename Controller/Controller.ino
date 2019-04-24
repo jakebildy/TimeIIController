@@ -12,12 +12,11 @@
 
 int flightStatus = PRELAUNCH;
 double temperature = -274;
-int valves[40] = { 0 };
-  
+int valves[] = {0,1,0,1,0,1,0,1};
+
 void setup() {
   
   Serial.begin(115200);     // opens serial port, sets baudrate to 9600 bps
-  
   pinMode(SRCLR, OUTPUT);
   pinMode(SRCLK, OUTPUT);
   pinMode(SER, OUTPUT);
@@ -31,18 +30,23 @@ void loop() {
     parseStatusFromRocket();
     updateValves();
     thermoRegulation();
+
 }
 
 void shift(){
   digitalWrite(RCLK, LOW);
-  for(int i=0; i < 40; i++){
+  for(int i=0; i < sizeof(valves)/2; i++){
     digitalWrite(SRCLR, HIGH);
     digitalWrite(SRCLK, LOW);
+    
     if(valves[i] == 1){
       digitalWrite(SER,HIGH);
     }else{
       digitalWrite(SER,LOW);
     }
+    
+    Serial.println(i);
+    digitalWrite(SRCLK, HIGH);
   }
   digitalWrite(RCLK, HIGH);
   return;
@@ -54,7 +58,7 @@ void parseStatusFromRocket() {
                 byte incomingByte = Serial.read();
 
                 // say what you got:
-                Serial.print("Received: ");
+                Serial.println("Received: ");
                 Serial.println(incomingByte, DEC);
 
                 flightStatus = START;
