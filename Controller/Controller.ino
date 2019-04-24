@@ -15,7 +15,9 @@ double temperature = -274;
 int valves[40] = { 0 };
   
 void setup() {
-  // put your setup code here, to run once:
+  
+  Serial.begin(115200);     // opens serial port, sets baudrate to 9600 bps
+  
   pinMode(SRCLR, OUTPUT);
   pinMode(SRCLK, OUTPUT);
   pinMode(SER, OUTPUT);
@@ -68,6 +70,8 @@ void updateValves() {
 void thermoRegulation() {
   return;
 }
+
+
 
 
 //helper function  to convert naming convention to value in array
