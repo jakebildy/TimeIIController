@@ -12,16 +12,16 @@
 
 int flightStatus = PRELAUNCH;
 double temperature = -274;
-
+int valves[40] = { 0 };
+  
 void setup() {
   // put your setup code here, to run once:
   pinMode(SRCLR, OUTPUT);
   pinMode(SRCLK, OUTPUT);
   pinMode(SER, OUTPUT);
   pinMode(RCLK, OUTPUT);
-  boolean BoolArray[16] = {1,1,1,1,0,0,0,0};
  
-  shift(BoolArray);
+  shift();
 }
 
 void loop() {
@@ -31,11 +31,25 @@ void loop() {
     thermoRegulation();
 }
 
+void shift(){
+  digitalWrite(RCLK, LOW);
+  for(int i=0; i < 40; i++){
+    digitalWrite(SRCLR, HIGH);
+    digitalWrite(SRCLK, LOW);
+    if(valves[i] == 1){
+      digitalWrite(SER,HIGH);
+    }else{
+      digitalWrite(SER,LOW);
+    }
+  }
+  digitalWrite(RCLK, HIGH);
+  return;
+}
 
 void parseStatusFromRocket() {
  if (Serial.available() > 0) {
                 // read the incoming byte:
-                incomingByte = Serial.read();
+                byte incomingByte = Serial.read();
 
                 // say what you got:
                 Serial.print("Received: ");
@@ -52,20 +66,5 @@ void updateValves() {
 }
 
 void thermoRegulation() {
-  return;
-}
-
-void shift(boolean Array[]){
-  digitalWrite(RCLK, LOW);
-  for(int i=0;i<sizeof(Array);i++){
-    digitalWrite(SRCLR, HIGH);
-    digitalWrite(SRCLK, LOW);
-    if(Array[i]){
-      digitalWrite(SER,HIGH);
-    }else{
-      digitalWrite(SER,LOW);
-    }
-  }
-  digitalWrite(RCLK, HIGH);
   return;
 }
