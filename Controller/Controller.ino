@@ -12,7 +12,7 @@
 
 int flightStatus = PRELAUNCH;
 double temperature = -274;
-int valves[] = {0,1,0,1,0,1,0,1};
+int valves[] = {1,1,1,0,0,0,0,0};
 
 void setup() {
   
