@@ -24,19 +24,22 @@ class sim:
     msg = ""
     msgOld = ""
     timesTen = False
+    serial = None
+    error_text  = Label(text="Can't connect to null", fg="red", bg=darkish)
+    error_text.grid(row=21, column=4)
+    updateTime = True
 
 
 flightSim = sim
 
 timesTen = False
-
+root.minsize(width=root.winfo_screenwidth(), height=root.winfo_screenheight())
 root.configure(bg=darkish)
 
-w = Label(root, text="BlueOrigin FlightSim", font='Helvetica 20 bold', bg=darkish, fg=whitish).grid(row=0, column=0, columnspan=6, padx=10)
-
+w = Label(root, text="BlueOrigin Flight Simulator", font='Helvetica 20 bold', bg=darkish, fg=whitish).grid(row=0, column=0, columnspan=6, padx=10)
+w2 = Label(root, text="", bg=darkish).grid(row=1, column=0)
 text_packet = Label(text="", bg=darkish, fg=whitish).grid(row=18, column=4)
 packet_title = Label(text="Text Packet:", bg=darkish, fg=whitish).grid(row=11, column=4)
-restart = Button(root, text="Restart", font='Helvetica 15 bold', bg=darkish, highlightbackground=darkish, highlightthickness=30, foreground=whitish).grid(row=0, column=5)
 connected = False
 exp_time = 0
 
@@ -45,11 +48,21 @@ simStart = False
 
 arduinoOutput = Label(text="Arduino Output   \n", font='Helvetica 18 bold', bg=darkish, fg=whitish).grid(row=19, column=4)
 
-try:
-    s = serial.Serial('/dev/tty.usbmodem1411', 115200, timeout=5)  # BlueOrigin specifies 115,200 baud rate
-    connected = True
-except:
-    errorText = Label(text="Can't connect to /dev/tty.usbmodem1411", fg="red", bg=darkish).grid(row=21, column=4)
+
+#path = "logo.png"
+#img = ImageTk.PhotoImage(Image.open(path).resize((320, 100), Image.ANTIALIAS))
+#panel = Label(root, image=img, borderwidth=0)
+#panel.photo = img
+#panel.grid(row=20,column=1)
+
+def connect(port_name):
+    sim.error_text.config(text="Connecting to "+port_name+" ...", fg="blue", bg=darkish)
+    try:
+        sim.serial = serial.Serial(port_name, 115200, timeout=5)  # BlueOrigin specifies 115,200 baud rate
+        sim.error_text.config(text="Connected to " + port_name, fg="green", bg=darkish)
+
+    except:
+        sim.error_text.config(text="Can't connect to "+port_name, fg="red", bg=darkish)
 
 
 def linearUpdate(thing, time1, time2, dist):
@@ -67,6 +80,9 @@ def expUpdate(thing, time1, time2, max):
 
 def running():
 
+
+
+    print(sim.serial.readline())
     msgSim = Label(root, text=flightSim.msg, font='Helvetica 18 bold', bg=code_dark,
                    fg=code_green)
     msgSim.grid(row=5, rowspan=7, column=4, sticky="n")
@@ -85,13 +101,14 @@ def running():
     buffer = 0.1
 
     while True:
-        if flightSim.timesTen:
+        if flightSim.timesTen and flightSim.updateTime:
             flightSim.exp_time += 1
             buffer = 1
-        else:
+        elif flightSim.updateTime:
             flightSim.exp_time += 0.1
 
         if flightSim.simStart:
+            flightSim.updateTime = True
             flightSim.msg = "[0:00] Main Engine Ignition Command"
             flightSim.exp_time = 0
             time.sleep(0.5)
@@ -102,12 +119,22 @@ def running():
 
         if flightSim.simRunning:
 
-            linearUpdate(altitude, 7, 135, 142706-3750)
+            linearUpdate(altitude, 7, 135, 142706-3650)
             linearUpdate(altitude, 135, 153, 195343-142706)
             linearUpdate(altitude, 153, 160, 215346-195343)
+            linearUpdate(altitude, 160, 179, 260739-215346)
+            linearUpdate(altitude, 179, 245, 328475-260739)
+            linearUpdate(altitude, 179, 245, 269939-328475)
+            linearUpdate(altitude, 179, 451, 23822-269939)
+            linearUpdate(altitude, 451, 632, 4080-23822)
 
             linearUpdate(y_vel, 7, 135, 2981)
             linearUpdate(y_vel, 135, 153, 2890-2981)
+            linearUpdate(y_vel, 153, 179, 2059-2890)
+            linearUpdate(y_vel, 179, 245, 0-2059)
+            linearUpdate(y_vel, 245, 358, 0-3323)
+            linearUpdate(y_vel, 358, 632, 3300)
+            linearUpdate(y_vel, 632, 650, 23)
 
             if flightSim.exp_time > 7 and flightSim.exp_time < (7 + buffer) :
 
@@ -159,11 +186,78 @@ def running():
                 flightSim.msg = "[5:07] Sensed Acceleration > 0.001g"
                 flightSim.msgOld =  "[4:05] Apogee"
                 status.set('F')
-                y_vel.set(0)
+
+
+
+            if flightSim.exp_time > 324 and flightSim.exp_time < (324 + buffer):
+                flightSim.msg = "[5:24] Sensed Acceleration > 0.01g"
+                flightSim.msgOld =  "[5:07] Sensed Acceleration > 0.001g"
+                status.set('F')
                 rcs_warning.set(0)
 
 
-        flightSim.exp_time += random.randrange(-1, 1, 1)/100  # if second decimal isn't always 0
+            if flightSim.exp_time > 342 and flightSim.exp_time < (342 + buffer):
+                flightSim.msg = "[5:42] Sensed Acceleration > 0.1g"
+                flightSim.msgOld =  "[5:24] Sensed Acceleration > 0.01g"
+                status.set('F')
+
+
+            if flightSim.exp_time > 358 and flightSim.exp_time < (358 + buffer):
+                flightSim.msg = "[5:58] Sensed Acceleration > 1.0g"
+                flightSim.msgOld =  "[5:42] Sensed Acceleration > 0.1g"
+                status.set('F')
+
+
+            if flightSim.exp_time > 375 and flightSim.exp_time < (375 + buffer):
+                flightSim.msg = "[6:15] Max G on Reentry"
+                flightSim.msgOld =  "[5:58] Sensed Acceleration > 1.0g"
+                status.set('F')
+
+
+            if flightSim.exp_time > 451 and flightSim.exp_time < (451 + buffer):
+                flightSim.msg = "[7:31] Mortar Deploy Drogues"
+                flightSim.msgOld = "[6:15] Max G on Reentry"
+                chute_warning.set(1)
+                status.set('G')
+
+            if flightSim.exp_time > 527 and flightSim.exp_time < (527 + buffer):
+                flightSim.msg = "[8:47] Peak Parachute Load"
+                flightSim.msgOld = "[7:31] Mortar Deploy Drogues"
+                chute_warning.set(0)
+                status.set('G')
+
+            if flightSim.exp_time > 632 and flightSim.exp_time < (632 + buffer):
+                flightSim.msg = "[10:32] Iniate Terminal Decelerator"
+                flightSim.msgOld = "[8:47] Peak Parachute Load"
+                landing_warning.set(1)
+                status.set('G')
+
+            # No times specified in documentation for the below - could be variable
+
+            if flightSim.exp_time > 655 and flightSim.exp_time < (655 + buffer):
+                flightSim.msg = "[10:55] Landing"
+                flightSim.msgOld = "[10:32] Iniate Terminal Decelerator"
+                landing_warning.set(0)
+                status.set('H')
+
+            if flightSim.exp_time > 675 and flightSim.exp_time < (675 + buffer):
+                flightSim.msg = "[11:15] Safing"
+                flightSim.msgOld = "[10:55] Landing"
+                status.set('I')
+
+            if flightSim.exp_time > 700 and flightSim.exp_time < (700 + buffer):
+                flightSim.msg = "[11:40] Finished"
+                flightSim.msgOld = "[11:15] Safing"
+                status.set('J')
+
+            if flightSim.exp_time > 702 and flightSim.exp_time < (702 + buffer):
+                flightSim.simRunning = False
+                flightSim.updateTime = False
+
+
+
+        if (flightSim.updateTime) :
+            flightSim.exp_time += random.randrange(-1, 1, 1)/100  # if second decimal isn't always 0
 
         time.sleep(.1)  # data sent at 10Hz
 
@@ -190,9 +284,9 @@ def running():
         msgSim.config(text=flightSim.msg)
         msgSimOld.config(text=flightSim.msgOld)
 
+        if (flightSim.simRunning) :
+            sim.serial.write(str.encode(text))
 
-        if connected:
-            s.write(text)
         root.update_idletasks()
         root.update()
 
@@ -335,14 +429,20 @@ for port in ports:
     try:
         s = serial.Serial(port)
         s.close()
-        portMenu.add_command(label=port)
+        if (sys.platform.startswith('win)')) :
+            portMenu.add_command(label=port, command = connect(port))
+        else :
+            portMenu.add_command(label=port)
     except (OSError, serial.SerialException):
         pass
 
+connect("/dev/cu.usbmodem1421")
 
 #create window for viewing
 
 timesTen = False
+
+
 running()
 
 
