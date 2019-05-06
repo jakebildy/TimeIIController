@@ -5,6 +5,7 @@
 #define MGRAV_END 3
 #define LANDING 4
 #define OTHER 5
+#define FINISHED 6
 
 //Pins
 
@@ -24,40 +25,46 @@ void setup() {
 void loop() {
    
    
-  if (Serial.available() >= 92) {
-    for (int i=0; i<92; i++) {
+  if (Serial.available() >= 1) {
       char inputChar = Serial.read();
 
-      if (i == 1) {
         if (inputChar == '@') {
           flightStatus = PRELAUNCH;
+           displayLED();
         }
         
         else if (inputChar == 'A') {
           flightStatus = LIFTOFF;
+           displayLED();
         }
         
         else if (inputChar == 'D') {
           flightStatus = MGRAV_BEGIN;
+           displayLED();
         }
         
         else if (inputChar == 'F') {
           flightStatus = MGRAV_END;
+           displayLED();
         }
         
         else if (inputChar == 'H') {
           flightStatus = LANDING;
+           displayLED();
         }    
 
-        else {
+        else if (inputChar == 'J') {
+          flightStatus = FINISHED;
+           displayLED();
+        }    
+
+        else if (isAlpha(inputChar)) {
           flightStatus = OTHER;
+          displayLED();
         }
-        
-      }
-    }
   }
 
- displayLED();
+    
 
 }
 
@@ -80,6 +87,30 @@ void displayLED() {
     digitalWrite(LED_LIFTOFF, LOW);
     digitalWrite(LED_MG_BEGIN, LOW);
     digitalWrite(LED_MG_END, HIGH);
+  }
+
+  else if (flightStatus == FINISHED) {
+    digitalWrite(LED_LIFTOFF, HIGH);
+    digitalWrite(LED_MG_BEGIN, HIGH);
+    digitalWrite(LED_MG_END, HIGH);
+
+    delay(500);  
+    
+    digitalWrite(LED_LIFTOFF, HIGH);
+    digitalWrite(LED_MG_BEGIN, HIGH);
+    digitalWrite(LED_MG_END, HIGH);
+
+    delay(500); 
+    
+    digitalWrite(LED_LIFTOFF, HIGH);
+    digitalWrite(LED_MG_BEGIN, HIGH);
+    digitalWrite(LED_MG_END, HIGH);
+
+   delay(500); 
+
+    digitalWrite(LED_LIFTOFF, LOW);
+    digitalWrite(LED_MG_BEGIN, LOW);
+    digitalWrite(LED_MG_END, LOW);
   }
 
   else {
