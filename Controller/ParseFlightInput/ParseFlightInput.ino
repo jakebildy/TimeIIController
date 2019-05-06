@@ -28,7 +28,7 @@ void loop() {
     for (int i=0; i<92; i++) {
       char inputChar = Serial.read();
 
-      if (i == 0) {
+      if (i == 1) {
         if (inputChar == '@') {
           flightStatus = PRELAUNCH;
         }
